@@ -56,19 +56,33 @@ class BaseRepository
             }
         }
 
-        $sql   = 'INSERT INTO `' . DBConfig::DATABASE . '`.`' . $table_name . '` (' . implode(',', $columns) . ') VALUES ( ' . implode(',', $bind_columns) . ' ) ';
-        $query = $this->pdo->prepare($sql);
-
-        //bind values
-        foreach ($values as $column => $value)
+        // begin transaction
+        $this->pdo->beginTransaction();
+        try
         {
-            $query->bindValue(':' . $column, $value);
-        }
+            $sql   = 'INSERT INTO `' . DBConfig::DATABASE . '`.`' . $table_name . '` (' . implode(',', $columns) . ') VALUES ( ' . implode(',', $bind_columns) . ' ) ';
+            $query = $this->pdo->prepare($sql);
 
-        //process
-        if (!$query->execute())
+            //bind values
+            foreach ($values as $column => $value)
+            {
+                $query->bindValue(':' . $column, $value);
+            }
+
+            //process
+            if (!$query->execute())
+            {
+                throw new RepositoryException($query->errorInfo());
+            }
+            $this->pdo->commit();
+
+        } // any errors from the above database queries will be catched
+        catch (\PDOException $e)
         {
-            throw new RepositoryException('failed to insert record: %s', $query->errorInfo());
+            // roll back transaction
+            $this->pdo->rollback();
+            // log any errors to file
+            throw $e;
         }
         return true;
     }
@@ -88,19 +102,33 @@ class BaseRepository
             $columns[] = ' `' . $column . '` = :' . $column;
         }
 
-        $sql   = 'DELETE FROM `' . DBConfig::DATABASE . '`.`' . $table_name . '` WHERE ' . implode(' AND ', $columns);
-        $query = $this->pdo->prepare($sql);
-
-        //bind values
-        foreach ($where as $column => $value)
+        // begin transaction
+        $this->pdo->beginTransaction();
+        try
         {
-            $query->bindValue(':' . $column, $value);
-        }
+            $sql   = 'DELETE FROM `' . DBConfig::DATABASE . '`.`' . $table_name . '` WHERE ' . implode(' AND ', $columns);
+            $query = $this->pdo->prepare($sql);
 
-        //process
-        if (!$query->execute())
+            //bind values
+            foreach ($where as $column => $value)
+            {
+                $query->bindValue(':' . $column, $value);
+            }
+
+            //process
+            if (!$query->execute())
+            {
+                throw new RepositoryException('failed to insert record: %s', $query->errorInfo());
+            }
+            $this->pdo->commit();
+
+        } // any errors from the above database queries will be catched
+        catch (\PDOException $e)
         {
-            throw new RepositoryException('failed to insert record: %s', $query->errorInfo());
+            // roll back transaction
+            $this->pdo->rollback();
+            // log any errors to file
+            throw $e;
         }
         return true;
     }

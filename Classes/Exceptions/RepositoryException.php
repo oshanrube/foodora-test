@@ -20,6 +20,6 @@ class RepositoryException extends \Exception
      */
     public function __construct($errorInfo)
     {
-        return parent::__construct(sprintf('failed to insert record: %s', $errorInfo[2]));
+        return parent::__construct(sprintf('failed to finish the transaction: %s', $errorInfo[2]));
     }
 }
