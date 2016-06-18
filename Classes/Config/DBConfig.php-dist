@@ -1,0 +1,37 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Oshan
+ * Date: 6/17/2016
+ * Time: 07:09 PM
+ */
+namespace Classes\Config;
+
+/**
+ * Class DBConfig
+ * @package Classes\Config
+ */
+class DBConfig
+{
+    /**
+     * @var string
+     */
+    const DATABASE = '';
+    /**
+     * @var string
+     */
+    const HOSTNAME = 'localhost';
+    /**
+     * @var string
+     */
+    const USERNAME = '';
+    /**
+     * @var string
+     */
+    const PASSWORD = '';
+
+    public static function getDsn()
+    {
+        return 'mysql:host=' . self::HOSTNAME . ';dbname=' . self::DATABASE;
+    }
+}
